@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="rojo">#B71C1C</color> <!-- Color restaurado -->
+
+    <!-- Tu nueva paleta de colores -->
+    <color name="blood_red">#8C1C13</color>
+    <color name="blushed_brick">#BF4342</color>
+    <color name="almond_cream">#E7D7C1</color>
+    <color name="dusty_taupe">#A78A7F</color>
+    <color name="mauve_bark">#735751</color>
+
+    <!-- Nuevos colores -->
+    <color name="cream_white">#F5F5DC</color>
+    <color name="dark_chocolate">#3E2723</color>
+</resources>

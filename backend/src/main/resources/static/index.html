@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>API de Cine - Inicio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial; }
+    body { margin: 0; padding: 24px; background: #f6f7fb; color: #0f172a; }
+    h1 { margin: 0 0 16px; font-size: 32px; }
+    .container { max-width: 800px; margin: 0 auto; }
+    .card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 6px 24px rgba(0,0,0,.06); margin-bottom: 24px; }
+    .card h2 { margin-top: 0; color: #7c3aed; }
+    .card p { color: #64748b; line-height: 1.6; }
+    .btn { display: inline-block; background: #7c3aed; color: white; border: 0; border-radius: 10px; padding: 12px 24px; text-decoration: none; font-size: 16px; margin-right: 12px; margin-top: 12px; }
+    .btn:hover { filter: brightness(1.05); }
+    .btn-secondary { background: #64748b; }
+    .endpoints { background: #f8f9fa; padding: 16px; border-radius: 8px; margin-top: 16px; }
+    .endpoints code { display: block; padding: 8px; background: #fff; border-radius: 4px; margin: 8px 0; font-family: monospace; }
+    .endpoints h3 { margin-top: 0; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎬 API de Cine</h1>
+    
+    <div class="card">
+      <h2>Bienvenido</h2>
+      <p>Gestiona tu base de datos de películas y directores con esta interfaz web.</p>
+      <a href="/directores.html" class="btn">🎬 Gestionar Directores</a>
+      <a href="/peliculas.html" class="btn">🎥 Gestionar Películas</a>
+    </div>
+
+    <div class="card">
+      <h2>Endpoints de la API</h2>
+      <p>Puedes usar estos endpoints directamente desde tu aplicación Android o cualquier cliente HTTP:</p>
+      
+      <div class="endpoints">
+        <h3>Directores</h3>
+        <code>GET /director</code>
+        <code>GET /director/{id}</code>
+        <code>POST /director</code>
+        <code>PUT /director</code>
+        <code>DELETE /director/delete/{id}</code>
+      </div>
+
+      <div class="endpoints">
+        <h3>Películas</h3>
+        <code>GET /api/peliculas</code>
+        <code>GET /api/peliculas/{id}</code>
+        <code>POST /api/peliculas</code>
+        <code>PUT /api/peliculas</code>
+        <code>DELETE /api/peliculas/{id}</code>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Información</h2>
+      <p>Esta aplicación está corriendo en el puerto <strong>8090</strong>.</p>
+      <p>Para acceder desde Android, usa la IP de tu máquina en lugar de localhost.</p>
+    </div>
+  </div>
+</body>
+</html>

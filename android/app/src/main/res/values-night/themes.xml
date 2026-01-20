@@ -1,0 +1,27 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme for dark mode. -->
+    <style name="Base.Theme.AppCitas" parent="Theme.Material3.Dark.NoActionBar">
+        <!-- Tu nueva paleta de colores para el modo oscuro -->
+        <item name="colorPrimary">@color/blushed_brick</item> <!-- Un rojo más brillante para el modo noche -->
+        <item name="colorPrimaryVariant">@color/blood_red</item>
+        <item name="colorOnPrimary">@color/white</item>
+
+        <!-- Colores secundarios -->
+        <item name="colorSecondary">@color/dusty_taupe</item>
+        <item name="colorSecondaryVariant">@color/mauve_bark</item>
+        <item name="colorOnSecondary">@color/white</item>
+
+        <!-- Colores de fondo y superficie -->
+        <item name="android:windowBackground">@color/mauve_bark</item>
+        <item name="colorSurface">@color/mauve_bark</item>
+        <item name="colorOnSurface">@color/almond_cream</item> <!-- Texto claro sobre fondo oscuro -->
+
+        <!-- Color para los hints (CORREGIDO) -->
+        <item name="android:textColorHint">@color/almond_cream</item>
+
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+    </style>
+
+    <style name="Theme.AppCitas" parent="Base.Theme.AppCitas" />
+</resources>

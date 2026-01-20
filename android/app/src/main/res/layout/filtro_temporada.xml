@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.button.MaterialButtonToggleGroup xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/groupTemporada"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:singleSelection="true">
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnInvierno"
+        style="@style/Widget.App.Button.OutlinedButton.Chip"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Invierno" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnVerano"
+        style="@style/Widget.App.Button.OutlinedButton.Chip"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Verano" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnOtono"
+        style="@style/Widget.App.Button.OutlinedButton.Chip"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Otoño" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnPrimavera"
+        style="@style/Widget.App.Button.OutlinedButton.Chip"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Primavera" />
+
+</com.google.android.material.button.MaterialButtonToggleGroup>

@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Directores – CRUD</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial; }
+    body { margin: 0; padding: 24px; background: #f6f7fb; color: #0f172a; }
+    h1 { margin: 0 0 16px; font-size: 24px; }
+    .nav { margin-bottom: 16px; }
+    .nav a { color: #7c3aed; text-decoration: none; margin-right: 16px; }
+    .nav a:hover { text-decoration: underline; }
+    .card { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 6px 24px rgba(0,0,0,.06); }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    input, button, select, textarea {
+      border-radius: 10px; border: 1px solid #d0d7e1; padding: 10px 12px; font-size: 14px; outline: none; background: #fff;
+    }
+    input:focus, textarea:focus { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,.15); }
+    button { cursor: pointer; }
+    .btn { background: #7c3aed; color: white; border: 0; }
+    .btn:hover { filter: brightness(1.05); }
+    .btn-outline { background: transparent; border: 1px solid #7c3aed; color: #7c3aed; }
+    .btn-danger { background: #ef4444; color: white; border: 0; }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 12px; }
+    .toolbar .row { flex-wrap: nowrap; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #eef2f7; }
+    th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: #6b7280; }
+    tr:hover td { background: #fafafa; }
+    .muted { color: #64748b; font-size: 12px; }
+    .spacer { height: 8px; }
+    dialog { border: 0; border-radius: 14px; padding: 0; width: 480px; max-width: 95vw; }
+    .modal { padding: 16px; }
+    .modal header { padding: 12px 16px; border-bottom: 1px solid #eef2f7; font-weight: 600; }
+    .modal .content { padding: 16px; }
+    .modal footer { padding: 12px 16px; border-top: 1px solid #eef2f7; display: flex; justify-content: flex-end; gap: 8px; }
+    .empty { text-align:center; padding: 32px; color:#6b7280; }
+    .badge-id { font-variant-numeric: tabular-nums; background:#ecfeff; color:#0369a1; padding:2px 6px; border-radius:8px; }
+    label { display: block; margin-bottom: 4px; font-size: 14px; font-weight: 500; }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <a href="/">🏠 Inicio</a>
+    <a href="/directores.html">🎬 Directores</a>
+    <a href="/peliculas.html">🎥 Películas</a>
+  </div>
+
+  <h1>🎬 Directores</h1>
+
+  <div class="card">
+    <div class="toolbar">
+      <div class="row">
+        <input id="searchInput" placeholder="Buscar por nombre..." />
+        <button class="btn-outline" id="searchBtn">Buscar</button>
+        <button id="clearSearchBtn">Limpiar</button>
+      </div>
+      <div class="row">
+        <button class="btn" id="newBtn">➕ Nuevo director</button>
+        <button id="reloadBtn">↻ Recargar</button>
+      </div>
+    </div>
+
+    <div id="count" class="muted"></div>
+    <div class="spacer"></div>
+
+    <div style="overflow:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Año de Nacimiento</th>
+            <th style="width:220px">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr><td colspan="4" class="empty">Cargando…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal Crear/Editar -->
+  <dialog id="upsertModal">
+    <form method="dialog" class="modal" id="upsertForm">
+      <header id="upsertTitle">Nuevo director</header>
+      <div class="content">
+        <input type="hidden" id="idDirector" />
+        <div class="row" style="flex-direction:column; align-items:stretch; margin-bottom: 12px;">
+          <label>Nombre *</label>
+          <input id="nombre" placeholder="Ej: Christopher Nolan" required />
+        </div>
+        <div class="row" style="flex-direction:column; align-items:stretch;">
+          <label>Año de Nacimiento *</label>
+          <input type="number" id="anyoNacimiento" placeholder="Ej: 1970" min="1800" max="2024" required />
+        </div>
+      </div>
+      <footer>
+        <button type="button" id="cancelUpsert">Cancelar</button>
+        <button class="btn" id="saveBtn">Guardar</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Modal Confirmar Borrado -->
+  <dialog id="deleteModal">
+    <form method="dialog" class="modal" id="deleteForm">
+      <header>Eliminar director</header>
+      <div class="content">
+        <p>¿Seguro que quieres eliminar al director <strong id="delName"></strong> (<span class="badge-id" id="delId"></span>)?</p>
+      </div>
+      <footer>
+        <button type="button" id="cancelDelete">Cancelar</button>
+        <button class="btn-danger" id="confirmDelete">Eliminar</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <script>
+    const API_BASE = "";
+
+    // Endpoints según DirectorController
+    const EP_LIST   = () => `${API_BASE}/director`;
+    const EP_GET    = (id) => `${API_BASE}/director/${id}`;
+    const EP_CREATE = () => `${API_BASE}/director`;
+    const EP_UPDATE = () => `${API_BASE}/director`;
+    const EP_DELETE = (id) => `${API_BASE}/director/delete/${id}`;
+
+    let rows = [];
+    let lastSearch = "";
+
+    const tbody = document.getElementById("tbody");
+    const count = document.getElementById("count");
+    const searchInput = document.getElementById("searchInput");
+    const searchBtn = document.getElementById("searchBtn");
+    const clearSearchBtn = document.getElementById("clearSearchBtn");
+    const reloadBtn = document.getElementById("reloadBtn");
+    const newBtn = document.getElementById("newBtn");
+
+    const upsertModal = document.getElementById("upsertModal");
+    const upsertTitle = document.getElementById("upsertTitle");
+    const upsertForm = document.getElementById("upsertForm");
+    const idDirectorInput = document.getElementById("idDirector");
+    const nombreInput = document.getElementById("nombre");
+    const anyoNacimientoInput = document.getElementById("anyoNacimiento");
+    const cancelUpsert = document.getElementById("cancelUpsert");
+    const saveBtn = document.getElementById("saveBtn");
+
+    const deleteModal = document.getElementById("deleteModal");
+    const delName = document.getElementById("delName");
+    const delId = document.getElementById("delId");
+    const cancelDelete = document.getElementById("cancelDelete");
+    const confirmDelete = document.getElementById("confirmDelete");
+    let deleteTargetId = null;
+
+    function fmt(v) { return v ?? ""; }
+    
+    function render() {
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="4" class="empty">Sin resultados</td></tr>`;
+        count.textContent = "0 directores";
+        return;
+      }
+      const html = rows.map(d => `
+        <tr>
+          <td><span class="badge-id">${fmt(d.idDirector)}</span></td>
+          <td>${fmt(d.nombre)}</td>
+          <td>${fmt(d.anyoNacimiento)}</td>
+          <td>
+            <button class="btn-outline" onclick="onEdit(${d.idDirector})">Editar</button>
+            <button class="btn-danger" onclick="onAskDelete(${d.idDirector})">Eliminar</button>
+            <button onclick="onView(${d.idDirector})">Ver</button>
+          </td>
+        </tr>
+      `).join("");
+      tbody.innerHTML = html;
+      count.textContent = `${rows.length} ${rows.length === 1 ? "director" : "directores"}`;
+    }
+
+    async function loadAll() {
+      tbody.innerHTML = `<tr><td colspan="4" class="empty">Cargando…</td></tr>`;
+      try {
+        const res = await fetch(EP_LIST(), { headers: { "Accept": "application/json" }});
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        rows = (Array.isArray(data) ? data : []).filter(d => {
+          if (!lastSearch) return true;
+          const txt = (d.nombre ?? "").toLowerCase();
+          return txt.includes(lastSearch.toLowerCase());
+        });
+        render();
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="4" class="empty">Error cargando: ${err}</td></tr>`;
+      }
+    }
+
+    async function onView(id) {
+      try {
+        const res = await fetch(EP_GET(id), { headers: { "Accept": "application/json" }});
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        alert("Detalle:\n" + JSON.stringify(data, null, 2));
+      } catch (e) {
+        alert("Error al recuperar detalle: " + e);
+      }
+    }
+
+    function onNew() {
+      upsertTitle.textContent = "Nuevo director";
+      idDirectorInput.value = "";
+      nombreInput.value = "";
+      anyoNacimientoInput.value = "";
+      upsertModal.showModal();
+    }
+
+    function onEdit(id) {
+      const d = rows.find(r => r.idDirector === id);
+      if (!d) return;
+      upsertTitle.textContent = `Editar director #${id}`;
+      idDirectorInput.value = d.idDirector ?? "";
+      nombreInput.value = d.nombre ?? "";
+      anyoNacimientoInput.value = d.anyoNacimiento ?? "";
+      upsertModal.showModal();
+    }
+
+    async function onSave(e) {
+      e?.preventDefault?.();
+      const payload = {
+        idDirector: idDirectorInput.value ? Number(idDirectorInput.value) : undefined,
+        nombre: nombreInput.value.trim(),
+        anyoNacimiento: anyoNacimientoInput.value ? Number(anyoNacimientoInput.value) : 0
+      };
+      if (!payload.nombre) { alert("El nombre es obligatorio."); return; }
+      if (!payload.anyoNacimiento || payload.anyoNacimiento < 1800) { 
+        alert("El año de nacimiento es obligatorio y debe ser válido."); 
+        return; 
+      }
+
+      const isUpdate = Boolean(payload.idDirector);
+      const url = isUpdate ? EP_UPDATE() : EP_CREATE();
+      const method = isUpdate ? "PUT" : "POST";
+
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error(await res.text());
+        await loadAll();
+        upsertModal.close();
+      } catch (e) {
+        alert("Error al guardar: " + e);
+      }
+    }
+
+    function onAskDelete(id) {
+      deleteTargetId = id;
+      const d = rows.find(r => r.idDirector === id);
+      delName.textContent = d?.nombre ?? "(sin nombre)";
+      delId.textContent = id;
+      deleteModal.showModal();
+    }
+    
+    async function onConfirmDelete() {
+      if (!deleteTargetId) return;
+      try {
+        const res = await fetch(EP_DELETE(deleteTargetId), { method: "DELETE" });
+        if (!res.ok) {
+          let msg = "";
+          try { msg = await res.text(); } catch {}
+          throw new Error(msg || "Error HTTP " + res.status);
+        }
+        await loadAll();
+        deleteModal.close();
+      } catch (e) {
+        alert("Error al eliminar: " + e);
+      } finally {
+        deleteTargetId = null;
+      }
+    }
+
+    searchBtn.addEventListener("click", () => {
+      lastSearch = searchInput.value.trim();
+      render();
+    });
+    clearSearchBtn.addEventListener("click", () => {
+      searchInput.value = "";
+      lastSearch = "";
+      render();
+    });
+    reloadBtn.addEventListener("click", loadAll);
+    newBtn.addEventListener("click", onNew);
+    cancelUpsert.addEventListener("click", () => upsertModal.close());
+    saveBtn.addEventListener("click", onSave);
+    cancelDelete.addEventListener("click", () => deleteModal.close());
+    confirmDelete.addEventListener("click", onConfirmDelete);
+
+    window.onEdit = onEdit;
+    window.onView = onView;
+    window.onAskDelete = onAskDelete;
+
+    loadAll();
+  </script>
+</body>
+</html>
+

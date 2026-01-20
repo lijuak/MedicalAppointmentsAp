@@ -1,0 +1,7 @@
+<resources>
+    <style name="Widget.App.Button.OutlinedButton.Chip" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="android:textColor">@color/chip_text_color</item>
+        <item name="strokeColor">@color/chip_stroke_color</item>
+        <item name="backgroundTint">@color/chip_background_color</item>
+    </style>
+</resources>

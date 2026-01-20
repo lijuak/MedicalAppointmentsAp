@@ -1,0 +1,54 @@
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.fusesource.jansi.internal.JansiLoader in an unnamed module (file:/C:/Users/Gabriel/.m2/wrapper/dists/apache-maven-3.8.4-bin/52ccbt68d252mdldqsfsn03jlf/apache-maven-3.8.4/lib/jansi-2.4.0.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by com.google.common.util.concurrent.AbstractFuture$UnsafeAtomicHelper (file:/C:/Users/Gabriel/.m2/wrapper/dists/apache-maven-3.8.4-bin/52ccbt68d252mdldqsfsn03jlf/apache-maven-3.8.4/lib/guava-25.1-android.jar)
+WARNING: Please consider reporting this to the maintainers of class com.google.common.util.concurrent.AbstractFuture$UnsafeAtomicHelper
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------------------< com.joange:AD_U5_A3_CP >-----------------------
+[INFO] Building AD_U5_A3_CP 0.0.1-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:3.1.0:clean (default-clean) @ AD_U5_A3_CP ---
+[INFO] Deleting C:\Users\Gabriel\Documents\appCitas\appCitas\appCitas\appCitas(spring)\target
+[INFO] 
+[INFO] --- maven-resources-plugin:3.1.0:resources (default-resources) @ AD_U5_A3_CP ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO] Copying 4 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.8.1:compile (default-compile) @ AD_U5_A3_CP ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 20 source files to C:\Users\Gabriel\Documents\appCitas\appCitas\appCitas\appCitas(spring)\target\classes
+[INFO] /C:/Users/Gabriel/Documents/appCitas/appCitas/appCitas/appCitas(spring)/src/main/java/com/appcitas/config/FirebaseConfig.java: C:\Users\Gabriel\Documents\appCitas\appCitas\appCitas\appCitas(spring)\src\main\java\com\appcitas\config\FirebaseConfig.java uses or overrides a deprecated API.
+[INFO] /C:/Users/Gabriel/Documents/appCitas/appCitas/appCitas/appCitas(spring)/src/main/java/com/appcitas/config/FirebaseConfig.java: Recompile with -Xlint:deprecation for details.
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /C:/Users/Gabriel/Documents/appCitas/appCitas/appCitas/appCitas(spring)/src/main/java/com/appcitas/controller/AuthController.java:[32,45] cannot find symbol
+  symbol:   method findOrCreateUsuario(java.lang.String,java.lang.String,java.lang.String)
+  location: variable usuarioService of type com.appcitas.service.UsuarioService
+[INFO] 1 error
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  5.555 s
+[INFO] Finished at: 2025-12-01T15:09:41+01:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.8.1:compile (default-compile) on project AD_U5_A3_CP: Compilation failure
+[ERROR] /C:/Users/Gabriel/Documents/appCitas/appCitas/appCitas/appCitas(spring)/src/main/java/com/appcitas/controller/AuthController.java:[32,45] cannot find symbol
+[ERROR]   symbol:   method findOrCreateUsuario(java.lang.String,java.lang.String,java.lang.String)
+[ERROR]   location: variable usuarioService of type com.appcitas.service.UsuarioService
+[ERROR] 
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

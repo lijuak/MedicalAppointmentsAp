@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawerLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="pantallas.EditarCita">
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <LinearLayout
+        android:id="@+id/main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- 1. BARRA DE HERRAMIENTAS AÑADIDA -->
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorPrimary"
+            android:theme="@style/ThemeOverlay.Material3.Dark.ActionBar"
+            app:title="Editar Cita" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:fillViewport="true">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp">
+
+                <!-- TÍTULO -->
+                <EditText
+                    android:id="@+id/etTituloCita"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:hint="Título"
+                    android:inputType="textCapSentences"
+                    android:padding="12dp"
+                    android:background="@android:drawable/edit_text"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+                <!-- DESCRIPCIÓN -->
+                <EditText
+                    android:id="@+id/etDescripcionCita"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:hint="Descripción"
+                    android:minLines="3"
+                    android:maxLines="5"
+                    android:gravity="top"
+                    android:inputType="textMultiLine"
+                    android:padding="12dp"
+                    android:background="@android:drawable/edit_text"
+                    app:layout_constraintTop_toBottomOf="@id/etTituloCita"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+                <!-- TEMPORADA -->
+                <TextView
+                    android:id="@+id/tvTemporadaLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Temporada"
+                    android:textStyle="bold"
+                    app:layout_constraintTop_toBottomOf="@id/etDescripcionCita"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/groupTemporada"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:singleSelection="true"
+                    app:layout_constraintTop_toBottomOf="@id/tvTemporadaLabel"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnTemporadaBaja"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Invierno" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnTemporadaMedia"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Verano" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnTemporadaAlta"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Otro" />
+                </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                <!-- DINERO -->
+                <TextView
+                    android:id="@+id/tvDineroLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Dinero"
+                    android:textStyle="bold"
+                    app:layout_constraintTop_toBottomOf="@id/groupTemporada"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/groupDinero"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:singleSelection="true"
+                    app:layout_constraintTop_toBottomOf="@id/tvDineroLabel"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnDineroBajo"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Bajo" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnDineroMedio"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Medio" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnDineroAlto"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Alto" />
+                </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                <!-- INTENSIDAD -->
+                <TextView
+                    android:id="@+id/tvIntensidadLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Intensidad"
+                    android:textStyle="bold"
+                    app:layout_constraintTop_toBottomOf="@id/groupDinero"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/groupIntensidad"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:singleSelection="true"
+                    app:layout_constraintTop_toBottomOf="@id/tvIntensidadLabel"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnIntensidadBaja"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Baja" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnIntensidadMedia"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Media" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnIntensidadAlta"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Alta" />
+                </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                <!-- CERCANÍA -->
+                <TextView
+                    android:id="@+id/tvCercaniaLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Cercanía"
+                    android:textStyle="bold"
+                    app:layout_constraintTop_toBottomOf="@id/groupIntensidad"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/groupCercania"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:singleSelection="true"
+                    app:layout_constraintTop_toBottomOf="@id/tvCercaniaLabel"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCercaniaBaja"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Lejos" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCercaniaMedia"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Normal" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCercaniaAlta"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Cerca" />
+                </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                <!-- FACILIDAD -->
+                <TextView
+                    android:id="@+id/tvFacilidadLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Facilidad"
+                    android:textStyle="bold"
+                    app:layout_constraintTop_toBottomOf="@id/groupCercania"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/groupFacilidad"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:singleSelection="true"
+                    app:layout_constraintTop_toBottomOf="@id/tvFacilidadLabel"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFacilidadBaja"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Difícil" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFacilidadMedia"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Normal" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFacilidadAlta"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Fácil" />
+                </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                <!-- 2. BOTÓN DE GUARDAR CAMBIOS -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnGuardarCambios"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:text="Guardar Cambios"
+                    app:cornerRadius="16dp"
+                    app:layout_constraintTop_toBottomOf="@id/groupFacilidad"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </ScrollView>
+
+    </LinearLayout>
+
+    <!-- MENÚ LATERAL (OPCIONAL, PERO BUENA PRÁCTICA) -->
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/navView"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:fitsSystemWindows="true"
+        app:headerLayout="@layout/nav_header"
+        app:menu="@menu/menu_drawer" />
+
+</androidx.drawerlayout.widget.DrawerLayout>

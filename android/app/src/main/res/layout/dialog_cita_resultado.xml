@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:id="@+id/txtTituloDialog"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Título de la Cita"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtDescripcionDialog"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Descripción de la cita..." />
+
+        <TextView
+            android:id="@+id/txtDetallesDialog"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Detalles:\n- Característica 1\n- Característica 2" />
+
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/btnCloseDialog"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/ic_close"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:layout_gravity="top|end"
+        android:contentDescription="Cerrar" />
+
+</FrameLayout>

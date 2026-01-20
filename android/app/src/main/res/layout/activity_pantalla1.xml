@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawerLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="pantallas.Pantalla1">
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- TOOLBAR (ARRIBA) -->
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorPrimary"
+            android:title="appCitas"
+            android:theme="@style/ThemeOverlay.Material3.ActionBar" />
+
+        <!-- TU LAYOUT ORIGINAL COMO CONTENIDO -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/main"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:padding="24dp"
+            android:background="#FFF7F2">
+
+            <Button
+                android:id="@+id/btnAtras"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Atrás"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <TextView
+                android:id="@+id/saludo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:text="Hola"
+                android:textSize="42sp"
+                android:textStyle="bold"
+                android:textColor="#212121"
+                app:layout_constraintBottom_toTopOf="@+id/subtitulo"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.1" />
+
+            <TextView
+                android:id="@+id/subtitulo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="32dp"
+                android:gravity="center"
+                android:lineSpacingExtra="4dp"
+                android:text="@string/subtitulo_pant1"
+                android:textAlignment="center"
+                android:textColor="#424242"
+                android:textSize="18sp"
+                app:layout_constraintBottom_toTopOf="@+id/btnCita"
+                app:layout_constraintEnd_toEndOf="@+id/saludo"
+                app:layout_constraintStart_toStartOf="@+id/saludo"
+                app:layout_constraintTop_toBottomOf="@+id/saludo" />
+
+            <Button
+                android:id="@+id/btnCita"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="24dp"
+                android:layout_marginBottom="80dp"
+                android:text="CITA"
+                android:textAllCaps="false"
+                android:textSize="18sp"
+                android:textColor="#FFFFFF"
+                android:fontFamily="sans-serif-medium"
+                android:paddingVertical="12dp"
+                android:backgroundTint="#FF7043"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@+id/subtitulo"
+                app:layout_constraintStart_toStartOf="@+id/subtitulo"
+                app:layout_constraintTop_toBottomOf="@+id/subtitulo" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </LinearLayout>
+
+    <!-- MENÚ LATERAL -->
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/navView"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:fitsSystemWindows="true"
+        app:headerLayout="@layout/nav_header"
+        app:menu="@menu/menu_drawer" />
+
+</androidx.drawerlayout.widget.DrawerLayout>
