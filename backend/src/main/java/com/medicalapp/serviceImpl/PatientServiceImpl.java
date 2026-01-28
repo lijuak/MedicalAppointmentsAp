@@ -39,6 +39,7 @@ public class PatientServiceImpl implements PatientService {
         Patient newPatient = new Patient();
         newPatient.setEmail(email);
         newPatient.setNombre(name);
+        newPatient.setUsername(email); // Set email as username to satisfy nullable = false
         newPatient.setPassword("firebase_oauth"); // Placeholder
         return patientRepo.save(newPatient);
     }

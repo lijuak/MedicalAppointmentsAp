@@ -16,6 +16,7 @@ public interface AppointmentRepo extends JpaRepository<Appointment, Long> {
                         "AND (:clinicLocationId IS NULL OR a.clinicLocationId = :clinicLocationId) " +
                         "AND (:availabilityScore IS NULL OR a.availabilityScore = :availabilityScore) " +
                         "AND (:patientId IS NULL OR a.patientId = :patientId) " +
+                        "AND (:doctorId IS NULL OR a.doctorId = :doctorId) " +
                         "AND (:id IS NULL OR a.id = :id)")
         List<Appointment> filterAppointments(
                         @Param("urgencyLevel") Integer urgencyLevel,
@@ -24,6 +25,7 @@ public interface AppointmentRepo extends JpaRepository<Appointment, Long> {
                         @Param("clinicLocationId") Integer clinicLocationId,
                         @Param("availabilityScore") Integer availabilityScore,
                         @Param("patientId") Long patientId,
+                        @Param("doctorId") Long doctorId,
                         @Param("id") Long id);
 
 }

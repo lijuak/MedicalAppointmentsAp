@@ -9,7 +9,7 @@ public interface AppointmentService {
 
     List<Appointment> findAll();
 
-    List<Appointment> filterAppointments(Integer urgencyLevel, Integer consultationFee, Integer durationMinutes, Integer clinicLocationId, Integer availabilityScore, Long patientId, Long id);
+    List<Appointment> filterAppointments(Integer urgencyLevel, Integer consultationFee, Integer durationMinutes, Integer clinicLocationId, Integer availabilityScore, Long patientId, Long doctorId, Long id);
 
     void deleteById(Long id);
     

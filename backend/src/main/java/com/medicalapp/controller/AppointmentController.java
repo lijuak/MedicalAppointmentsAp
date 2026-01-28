@@ -33,6 +33,7 @@ public class AppointmentController {
             request.getClinicLocationId(),
             request.getAvailabilityScore(),
             request.getPatientId(),
+            request.getDoctorId(),
             request.getId()
         );
         return new ResponseEntity<>(results, HttpStatus.OK);

@@ -1,41 +1,33 @@
 {
   "project_info": {
-    "project_number": "358165751124",
-    "project_id": "appcitas-59e0d",
-    "storage_bucket": "appcitas-59e0d.firebasestorage.app"
+    "project_number": "642747351184",
+    "project_id": "citas-b9526",
+    "storage_bucket": "citas-b9526.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:358165751124:android:8243c1c08cf0de20eb94c1",
+        "mobilesdk_app_id": "1:642747351184:android:b6dd0a959fa89d3ba61815",
         "android_client_info": {
-          "package_name": "com.example.appcitas"
+          "package_name": "com.medicalapp"
         }
       },
       "oauth_client": [
         {
-          "client_id": "358165751124-t1lk8uaj51nkfopqmboaimnc601b6o7a.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.appcitas",
-            "certificate_hash": "1fb5b8d7612be2f9f1702fcd803f02548fbaad52"
-          }
-        },
-        {
-          "client_id": "358165751124-sp1rk4ps3nffern4tcb5d3md7h6m913n.apps.googleusercontent.com",
+          "client_id": "642747351184-cl95j04e7hfh0hhdlj5epi83op7b4jnb.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBrcZByAk56D-ukwTb0DY_GMa1MeKoiyqw"
+          "current_key": "AIzaSyA6Hrqen94dfVOeYg55XuLTZDZJBXqE0N4"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "358165751124-sp1rk4ps3nffern4tcb5d3md7h6m913n.apps.googleusercontent.com",
+              "client_id": "642747351184-cl95j04e7hfh0hhdlj5epi83op7b4jnb.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

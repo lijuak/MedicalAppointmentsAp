@@ -9,15 +9,17 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.medicalapp.R
 import com.medicalapp.model.Cita
+import java.text.SimpleDateFormat
+import java.util.*
 
-// 1. Interfaz para comunicar acciones a la Activity
+// Interfaz para comunicar acciones a la Activity
 interface CitaActionListener {
     fun onEditarCita(cita: Cita)
     fun onEliminarCita(cita: Cita, position: Int)
 }
 
 class CitasAdapter(
-    private var citas: MutableList<Cita>, // Convertido a MutableList
+    private var citas: MutableList<Cita>,
     private val listener: CitaActionListener
 ) : RecyclerView.Adapter<CitasAdapter.CitaViewHolder>() {
 
@@ -47,24 +49,57 @@ class CitasAdapter(
 
     inner class CitaViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val tvTitulo: TextView = itemView.findViewById(R.id.tvTituloCita)
-        private val tvDescripcion: TextView = itemView.findViewById(R.id.tvDescripcionCita)
-        private val tvDinero: TextView = itemView.findViewById(R.id.tvChipDinero)
-        private val tvIntensidad: TextView = itemView.findViewById(R.id.tvChipIntensidad)
-        private val tvCercania: TextView = itemView.findViewById(R.id.tvChipCercania)
-        private val tvTemporada: TextView = itemView.findViewById(R.id.tvChipTemporada)
+        private val tvEspecialidad: TextView = itemView.findViewById(R.id.tvEspecialidad)
+        private val tvFechaHora: TextView = itemView.findViewById(R.id.tvFechaHora)
+        private val tvSintomas: TextView = itemView.findViewById(R.id.tvSintomas)
         private val ivMenu: ImageView = itemView.findViewById(R.id.ivMenuCita)
+        private val viewUrgencia: View = itemView.findViewById(R.id.viewUrgencia)
+        private val tvUrgenciaLabel: TextView = itemView.findViewById(R.id.tvUrgenciaPlaceholder)
+        private val tvEstado: TextView = itemView.findViewById(R.id.tvEstadoCita)
 
         fun bind(cita: Cita, listener: CitaActionListener) {
-            tvTitulo.text = cita.titulo
-            tvDescripcion.text = cita.descripcion
-            tvDinero.text = "€ ${mapDinero(cita.dinero)}"
-            tvIntensidad.text = mapIntensidad(cita.intensidad)
-            tvCercania.text = mapCercania(cita.cercania)
-            tvTemporada.text = mapTemporada(cita.temporada)
+            tvTitulo.text = cita.nombreDoctor
+            tvEspecialidad.text = cita.especialidad ?: "General"
+            
+            // Urgencia: Corazón de color + Label
+            val esUrgente = cita.nivelUrgencia == 3
+            val tintColor = if (esUrgente) {
+                itemView.context.getColor(android.R.color.holo_red_light)
+            } else {
+                itemView.context.getColor(android.R.color.holo_green_light)
+            }
+            viewUrgencia.backgroundTintList = android.content.res.ColorStateList.valueOf(tintColor)
+            tvUrgenciaLabel.visibility = if (esUrgente) View.VISIBLE else View.GONE
+            
+            // Estado
+            tvEstado.text = cita.estado ?: "RESERVADA"
+            
+            // Formatear fecha y hora
+            val fechaHoraTexto = formatFechaHora(cita.fechaHoraCita)
+            tvFechaHora.text = fechaHoraTexto
+            
+            // Mostrar síntomas
+            tvSintomas.text = cita.sintomas ?: "Sin descripción"
 
-            // 2. Listener para el icono del menú
+            // Listener para el icono del menú
             ivMenu.setOnClickListener { view ->
                 showPopupMenu(view, cita, listener)
+            }
+        }
+
+        private fun formatFechaHora(fechaHoraISO: String?): String {
+            if (fechaHoraISO == null) return "Fecha no disponible"
+            
+            return try {
+                // Parsear formato ISO 8601
+                val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                val date = isoFormat.parse(fechaHoraISO)
+                
+                // Formatear para mostrar
+                val displayFormat = SimpleDateFormat("dd/MM/yyyy - HH:mm", Locale.getDefault())
+                displayFormat.format(date ?: Date())
+            } catch (e: Exception) {
+                "Fecha no válida"
             }
         }
 
@@ -86,11 +121,5 @@ class CitasAdapter(
             }
             popup.show()
         }
-
-        // --- Funciones de mapeo (sin cambios) ---
-        private fun mapDinero(valor: Int?): String = when (valor) { 1 -> "Bajo"; 2 -> "Medio"; 3 -> "Alto"; else -> "N/A" }
-        private fun mapIntensidad(valor: Int?): String = when (valor) { 1 -> "Tranqui"; 2 -> "Normal"; 3 -> "Intenso"; else -> "N/A" }
-        private fun mapCercania(valor: Int?): String = when (valor) { 1 -> "Cerca"; 2 -> "Normal"; 3 -> "Lejos"; else -> "N/A" }
-        private fun mapTemporada(valor: Int?): String = when (valor) { 1 -> "Baja"; 2 -> "Media"; 3 -> "Alta"; else -> "N/A" }
     }
 }

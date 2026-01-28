@@ -40,6 +40,7 @@ class EditarCita : AppCompatActivity() {
         cache = getSharedPreferences("cache", MODE_PRIVATE)
 
         setSupportActionBar(binding.toolbar)
+        supportActionBar?.title = "Detalles de Consulta"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.toolbar) { view, insets ->
@@ -127,13 +128,15 @@ class EditarCita : AppCompatActivity() {
             try {
                 val cita = RetrofitClient.citaApi.getCitaPorId(citaId!!)
                 citaActual = cita
-                binding.etTituloCita.setText(cita.titulo)
-                binding.etDescripcionCita.setText(cita.descripcion)
-                binding.groupTemporada.check(when (cita.temporada) { 1 -> R.id.btnTemporadaBaja; 3 -> R.id.btnTemporadaAlta; else -> R.id.btnTemporadaMedia })
-                binding.groupDinero.check(when (cita.dinero) { 1 -> R.id.btnDineroBajo; 3 -> R.id.btnDineroAlto; else -> R.id.btnDineroMedio })
-                binding.groupIntensidad.check(when (cita.intensidad) { 1 -> R.id.btnIntensidadBaja; 3 -> R.id.btnIntensidadAlta; else -> R.id.btnIntensidadMedia })
-                binding.groupCercania.check(when (cita.cercania) { 1 -> R.id.btnCercaniaAlta; 3 -> R.id.btnCercaniaBaja; else -> R.id.btnCercaniaMedia })
-                binding.groupFacilidad.check(when (cita.facilidad) { 1 -> R.id.btnFacilidadAlta; 3 -> R.id.btnFacilidadBaja; else -> R.id.btnFacilidadMedia })
+                binding.etTituloCita.setText(cita.nombreDoctor)
+                binding.etDescripcionCita.setText(cita.especialidad)
+                
+                // Mapeo inverso para los RadioGroups (Asumiendo IDs médicos en el layout)
+                // Nota: Si el layout aún tiene IDs viejos, esto funcionará igual si se mantienen los mismos RadioButtons
+                binding.groupTemporada.check(when (cita.nivelUrgencia) { 1 -> R.id.btnTemporadaBaja; 4 -> R.id.btnTemporadaAlta; else -> R.id.btnTemporadaMedia })
+                binding.groupDinero.check(when (cita.precioConsulta) { 1 -> R.id.btnDineroBajo; 3 -> R.id.btnDineroAlto; else -> R.id.btnDineroMedio })
+                binding.groupIntensidad.check(when (cita.duracionMinutos) { 1 -> R.id.btnIntensidadBaja; 3 -> R.id.btnIntensidadAlta; else -> R.id.btnIntensidadMedia })
+                // Campos removidos: idClinica y disponibilidad ya no existen en el modelo
             } catch (e: Exception) {
                 Toast.makeText(this@EditarCita, "Error al cargar los datos: ${e.message}", Toast.LENGTH_LONG).show()
                 finish()
@@ -142,30 +145,46 @@ class EditarCita : AppCompatActivity() {
     }
 
     private fun actualizarCita() {
-        val titulo = binding.etTituloCita.text.toString().trim()
-        val descripcion = binding.etDescripcionCita.text.toString().trim()
-        if (titulo.isEmpty()) {
-            Toast.makeText(this, "El título no puede estar vacío", Toast.LENGTH_SHORT).show()
+        val doctorName = binding.etTituloCita.text.toString().trim()
+        val specialty = binding.etDescripcionCita.text.toString().trim()
+        
+        if (doctorName.isEmpty() || specialty.isEmpty()) {
+            Toast.makeText(this, "El nombre del doctor y el motivo no pueden estar vacíos", Toast.LENGTH_SHORT).show()
             return
         }
-        val temporada = when (binding.groupTemporada.checkedButtonId) { R.id.btnTemporadaBaja -> 1; R.id.btnTemporadaAlta -> 3; else -> 2 }
-        val dinero = when (binding.groupDinero.checkedButtonId) { R.id.btnDineroBajo -> 1; R.id.btnDineroAlto -> 3; else -> 2 }
-        val intensidad = when (binding.groupIntensidad.checkedButtonId) { R.id.btnIntensidadBaja -> 1; R.id.btnIntensidadAlta -> 3; else -> 2 }
-        val cercania = when (binding.groupCercania.checkedButtonId) { R.id.btnCercaniaBaja -> 3; R.id.btnCercaniaAlta -> 1; else -> 2 }
-        val facilidad = when (binding.groupFacilidad.checkedButtonId) { R.id.btnFacilidadBaja -> 3; R.id.btnFacilidadAlta -> 1; else -> 2 }
-        val creadorId = citaActual?.creadorId
-        if (creadorId == null) {
-            Toast.makeText(this, "Error: No se pudo identificar al creador de la cita.", Toast.LENGTH_LONG).show()
-            return
+
+        val urgencyLevel = when (binding.groupTemporada.checkedButtonId) { 
+            R.id.btnTemporadaBaja -> 1 
+            R.id.btnTemporadaAlta -> 3 
+            else -> 2 
         }
-        val citaActualizada = Cita(id = citaId!!, titulo = titulo, descripcion = descripcion, temporada = temporada, dinero = dinero, intensidad = intensidad, cercania = cercania, facilidad = facilidad, creadorId = creadorId)
+        val consultationFee = when (binding.groupDinero.checkedButtonId) { R.id.btnDineroBajo -> 1; R.id.btnDineroAlto -> 3; else -> 2 }
+        val durationMinutes = when (binding.groupIntensidad.checkedButtonId) { R.id.btnIntensidadBaja -> 1; R.id.btnIntensidadAlta -> 3; else -> 2 }
+        val clinicLocationId = when (binding.groupCercania.checkedButtonId) { R.id.btnCercaniaBaja -> 3; R.id.btnCercaniaAlta -> 1; else -> 2 }
+        val availabilityScore = when (binding.groupFacilidad.checkedButtonId) { R.id.btnFacilidadBaja -> 3; R.id.btnFacilidadAlta -> 1; else -> 2 }
+        
+        val patientId = citaActual?.idPaciente ?: cache.getLong("id", 0L)
+
+        val citaActualizada = Cita(
+            id = citaId!!,
+            nombreDoctor = doctorName,
+            especialidad = specialty,
+            fechaHoraCita = citaActual?.fechaHoraCita,
+            sintomas = citaActual?.sintomas,
+            idDoctor = citaActual?.idDoctor,
+            idPaciente = patientId,
+            nivelUrgencia = urgencyLevel,
+            precioConsulta = consultationFee,
+            duracionMinutos = durationMinutes
+        )
+
         lifecycleScope.launch {
             try {
                 RetrofitClient.citaApi.actualizarCita(citaId!!, citaActualizada)
-                Toast.makeText(this@EditarCita, "Cita actualizada con éxito", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@EditarCita, "¡Cita médica actualizada correctamente!", Toast.LENGTH_SHORT).show()
                 finish()
             } catch (e: Exception) {
-                Toast.makeText(this@EditarCita, "Error al actualizar: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(this@EditarCita, "Error al actualizar la cita: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     }

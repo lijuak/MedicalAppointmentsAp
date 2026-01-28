@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission
         android:name="com.google.android.gms.permission.AD_ID"
         tools:node="remove" />
@@ -26,7 +26,7 @@
             android:value="AIzaSyCLkjmYlVQ4s-fEQXVbjTKDN3TiS93vmfE" />
 
         <activity
-            android:name="pantallas.MainActivity"
+            android:name=".pantallas.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -35,28 +35,28 @@
         </activity>
 
         <activity
-            android:name="pantallas.LoginActivity"
+            android:name=".pantallas.LoginActivity"
             android:exported="false" />
 
         <activity
-            android:name="pantallas.RegisterActivity"
+            android:name=".pantallas.RegisterActivity"
             android:exported="false" />
 
         <activity
-            android:name="pantallas.MiPerfil"
+            android:name=".pantallas.MiPerfil"
             android:exported="false" />
 
         <activity
-            android:name="pantallas.Pantalla1"
+            android:name=".pantallas.Pantalla1"
             android:exported="false" /> 
         <activity
-            android:name="pantallas.CrearCita"
+            android:name=".pantallas.CrearCita"
             android:exported="false" />
         <activity
-            android:name="pantallas.MisCitas"
+            android:name=".pantallas.MisCitas"
             android:exported="false" />
         <activity
-            android:name="pantallas.EditarCita"
+            android:name=".pantallas.EditarCita"
             android:exported="false" />
 
         <meta-data

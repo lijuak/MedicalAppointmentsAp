@@ -1,6 +1,6 @@
 package com.medicalapp.APIS
 
-import CitaFiltroRequest
+import com.medicalapp.model.CitaFiltroRequest
 import com.medicalapp.model.Cita
 import retrofit2.http.Body
 import retrofit2.http.DELETE

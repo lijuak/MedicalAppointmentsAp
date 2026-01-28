@@ -22,16 +22,12 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public List<Appointment> findAll() {
-        return appointmentRepo.findAllAnimations();
-    }
-
-    private List<Appointment> findAllAnimations() {
-        return appointmentRepo.findAllAppointments();
+        return appointmentRepo.findAll();
     }
 
     @Override
-    public List<Appointment> filterAppointments(Integer urgencyLevel, Integer consultationFee, Integer durationMinutes, Integer clinicLocationId, Integer availabilityScore, Long patientId, Long id) {
-        return appointmentRepo.filterAppointments(urgencyLevel, consultationFee, durationMinutes, clinicLocationId, availabilityScore, patientId, id);
+    public List<Appointment> filterAppointments(Integer urgencyLevel, Integer consultationFee, Integer durationMinutes, Integer clinicLocationId, Integer availabilityScore, Long patientId, Long doctorId, Long id) {
+        return appointmentRepo.filterAppointments(urgencyLevel, consultationFee, durationMinutes, clinicLocationId, availabilityScore, patientId, doctorId, id);
     }
 
     @Override

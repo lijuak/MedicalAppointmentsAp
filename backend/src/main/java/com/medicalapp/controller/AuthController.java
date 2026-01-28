@@ -22,18 +22,24 @@ public class AuthController {
     @PostMapping("/verify-token")
     public ResponseEntity<?> verifyTokenAndLogin(@RequestBody Map<String, String> payload) {
         String idToken = payload.get("token");
+        System.out.println("=== VERIFY TOKEN CALLED ===");
+        System.out.println("Token received (first 50 chars): " + (idToken != null ? idToken.substring(0, Math.min(50, idToken.length())) : "NULL"));
         try {
             // Firebase Verification
             FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
             String uid = decodedToken.getUid();
             String email = decodedToken.getEmail();
             String name = decodedToken.getName();
+            System.out.println("Firebase verification SUCCESS - UID: " + uid + ", Email: " + email);
 
             Patient patient = patientService.findOrCreatePatient(uid, email, name);
+            System.out.println("Patient created/found: " + patient.getId());
 
             return ResponseEntity.ok(patient);
 
         } catch (Exception e) {
+            System.err.println("Firebase verification FAILED: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication Error: " + e.getMessage());
         }
     }

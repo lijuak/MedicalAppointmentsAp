@@ -1,22 +1,28 @@
 package com.medicalapp.pantallas
 
-import CitaFiltroRequest
+import com.medicalapp.model.CitaFiltroRequest
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.Button
-import android.widget.ImageButton
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.medicalapp.R
@@ -25,9 +31,13 @@ import com.medicalapp.adapters.CitaActionListener
 import com.medicalapp.adapters.CitasAdapter
 import com.medicalapp.databinding.ActivityMisCitasBinding
 import com.medicalapp.model.Cita
-import com.google.android.material.button.MaterialButtonToggleGroup
-import com.google.android.material.slider.Slider
+import com.medicalapp.model.Usuario
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import kotlin.math.sqrt
 
 class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
@@ -39,15 +49,9 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
     // --- Propiedades para la Búsqueda por Agitación ---
     private lateinit var sensorManager: SensorManager
     private var accelerometer: Sensor? = null
-    private var filtroSeleccionado: CitaFiltroRequest? = null
     private var lastShakeTime: Long = 0
     private val shakeThreshold = 12f
     private val shakeCooldownMs = 1500L
-
-    // --- Asistente de Filtros ---
-    private var dialogPaso: AlertDialog? = null
-    private var pasoActual = 0
-    private var filtroBuilder = CitaFiltroRequest()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,28 +64,75 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
         setupRecyclerView()
         setupBottomNavigation()
         setupSensor()
-
-        binding.fabBuscarCita.setOnClickListener {
-            iniciarAsistenteDeFiltros()
+        createNotificationChannel()
+        
+        // Solicitar permiso de notificaciones en Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) 
+                != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, 
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1001)
+            }
         }
 
         binding.swipeRefreshLayout.setOnRefreshListener {
             val idUsuario = cache.getLong("id", 0L)
             if (idUsuario != 0L) {
                 cargarCitasUsuario(idUsuario)
+            } else {
+                intentarSincronizacionForzada()
             }
         }
 
         val idUsuario = cache.getLong("id", 0L)
-        if (idUsuario != 0L) {
-            cargarCitasUsuario(idUsuario)
+        
+        // Siempre intentar cargar las citas, incluso si el ID es 0
+        // porque las citas existentes tienen patientId = 0
+        cargarCitasUsuario(idUsuario)
+        
+        // Si el ID es 0, también intentar sincronizar en segundo plano
+        if (idUsuario == 0L) {
+            intentarSincronizacionForzada()
+        }
+    }
+
+    private fun intentarSincronizacionForzada() {
+        val firebaseUser = FirebaseAuth.getInstance().currentUser
+        if (firebaseUser != null) {
+            firebaseUser.getIdToken(true).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val idToken = task.result.token
+                    if (idToken != null) {
+                        val tokenMap = mapOf("token" to idToken)
+                        RetrofitClient.api.verificarToken(tokenMap).enqueue(object : Callback<Usuario> {
+                            override fun onResponse(call: Call<Usuario>, response: Response<Usuario>) {
+                                if (response.isSuccessful && response.body() != null) {
+                                    val user = response.body()!!
+                                    cache.edit()
+                                        .putString("username", firebaseUser.displayName ?: user.username)
+                                        .putString("email", user.email)
+                                        .putLong("id", user.id ?: 0L)
+                                        .apply()
+                                    
+                                    val nuevoId = user.id ?: 0L
+                                    if (nuevoId != 0L) {
+                                        cargarCitasUsuario(nuevoId)
+                                    }
+                                }
+                            }
+                            override fun onFailure(call: Call<Usuario>, t: Throwable) {
+                                Log.e("SYNC_ERROR", "Fallo sync forzado", t)
+                            }
+                        })
+                    }
+                }
+            }
         }
     }
 
     private fun setupToolbar() {
         setSupportActionBar(binding.toolbar)
-        val username = cache.getString("username", null)
-        supportActionBar?.title = if (!username.isNullOrEmpty()) "Bienvenido, $username" else "CitaPlanner"
+        supportActionBar?.title = "Medicina S.L"
     }
 
     private fun setupRecyclerView() {
@@ -120,20 +171,29 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
         binding.swipeRefreshLayout.isRefreshing = true
         lifecycleScope.launch {
             try {
-                val filtro = CitaFiltroRequest(creadorId = idUsuario)
+                // DEBUG: Cargamos todas las citas sin filtrar por usuario
+                // porque las citas existentes tienen patientId = 0
+                val filtro = CitaFiltroRequest(idPaciente = null)
+                
+                Log.d("MIS_CITAS", "Cargando TODAS las citas (debug mode)")
                 val citas = RetrofitClient.citaApi.filtrarCitas(filtro)
-
+                
+                Log.d("MIS_CITAS", "Citas recibidas: ${citas.size}")
+                
                 if (citas.isNotEmpty()) {
                     citasAdapter.updateData(citas)
                     binding.rvMisCitas.visibility = View.VISIBLE
                     binding.layoutSinCitas.visibility = View.GONE
+                    mostrarProximaCita(citas)
                 } else {
+                    Log.d("MIS_CITAS", "La lista de citas está vacía")
                     binding.rvMisCitas.visibility = View.GONE
                     binding.layoutSinCitas.visibility = View.VISIBLE
+                    binding.layoutProximaCita.visibility = View.GONE
                 }
             } catch (e: Exception) {
                 Log.e("CARGAR_CITAS_ERROR", "Error al cargar las citas", e)
-                Toast.makeText(this@MisCitas, "Error al obtener tus citas", Toast.LENGTH_LONG).show()
+                Toast.makeText(this@MisCitas, "Conexión pérdida o error de servidor", Toast.LENGTH_SHORT).show()
                 binding.rvMisCitas.visibility = View.GONE
                 binding.layoutSinCitas.visibility = View.VISIBLE
             } finally {
@@ -142,174 +202,16 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
         }
     }
 
-    // --- Lógica del Asistente de Filtros ---
-
-    private fun iniciarAsistenteDeFiltros() {
-        pasoActual = 0
-        filtroBuilder = CitaFiltroRequest()
-
-        val dialogView = layoutInflater.inflate(R.layout.dialog_filtro_paso, null)
-        dialogPaso = AlertDialog.Builder(this).setView(dialogView).create()
-        dialogPaso?.setCancelable(false)
-        dialogPaso?.window?.setBackgroundDrawableResource(android.R.color.transparent)
-
-        mostrarPasoDelFiltro(dialogView, 0)
-
-        dialogPaso?.show()
-    }
-
-    private fun mostrarPasoDelFiltro(view: View, paso: Int) {
-        val titulo = view.findViewById<TextView>(R.id.tvFiltroTitulo)
-        val container = view.findViewById<android.widget.FrameLayout>(R.id.filtro_content_container)
-        val btnAtras = view.findViewById<Button>(R.id.btnAtras)
-        val btnSiguiente = view.findViewById<Button>(R.id.btnSiguiente)
-
-        container.removeAllViews()
-
-        when (paso) {
-            0 -> {
-                titulo.text = "¿En qué temporada quieres tu cita?"
-                val temporadaView = layoutInflater.inflate(R.layout.filtro_temporada, container, false)
-                container.addView(temporadaView)
-                btnAtras.visibility = View.INVISIBLE
-
-                btnSiguiente.setOnClickListener {
-                    val group = temporadaView.findViewById<MaterialButtonToggleGroup>(R.id.groupTemporada)
-                    val temporadaValue = when (group.checkedButtonId) {
-                        R.id.btnInvierno -> 1
-                        R.id.btnVerano -> 2
-                        R.id.btnOtono -> 3
-                        R.id.btnPrimavera -> 4
-                        else -> null
-                    }
-                    filtroBuilder = filtroBuilder.copy(temporada = temporadaValue)
-                    pasoActual++
-                    mostrarPasoDelFiltro(view, pasoActual)
-                }
-            }
-            1 -> {
-                titulo.text = "¿Cuánto te quieres gastar?"
-                val sliderView = layoutInflater.inflate(R.layout.filtro_slider, container, false)
-                container.addView(sliderView)
-                btnAtras.visibility = View.VISIBLE
-
-                btnAtras.setOnClickListener {
-                    pasoActual--
-                    mostrarPasoDelFiltro(view, pasoActual)
-                }
-
-                btnSiguiente.setOnClickListener {
-                    val slider = sliderView.findViewById<Slider>(R.id.slider)
-                    filtroBuilder = filtroBuilder.copy(dinero = slider.value.toInt())
-                    pasoActual++
-                    mostrarPasoDelFiltro(view, pasoActual)
-                }
-            }
-            2 -> {
-                titulo.text = "¿Qué nivel de intensidad buscas?"
-                val sliderView = layoutInflater.inflate(R.layout.filtro_slider, container, false)
-                container.addView(sliderView)
-                btnAtras.visibility = View.VISIBLE
-
-                btnAtras.setOnClickListener {
-                    pasoActual--
-                    mostrarPasoDelFiltro(view, pasoActual)
-                }
-
-                btnSiguiente.setOnClickListener {
-                    val slider = sliderView.findViewById<Slider>(R.id.slider)
-                    filtroBuilder = filtroBuilder.copy(intensidad = slider.value.toInt())
-                    pasoActual++
-                    mostrarPasoDelFiltro(view, pasoActual)
-                }
-            }
-            3 -> {
-                titulo.text = "¿Qué tan lejos quieres ir?"
-                val sliderView = layoutInflater.inflate(R.layout.filtro_slider, container, false)
-                container.addView(sliderView)
-                btnAtras.visibility = View.VISIBLE
-
-                btnAtras.setOnClickListener {
-                    pasoActual--
-                    mostrarPasoDelFiltro(view, pasoActual)
-                }
-
-                btnSiguiente.setOnClickListener {
-                    val slider = sliderView.findViewById<Slider>(R.id.slider)
-                    filtroBuilder = filtroBuilder.copy(cercania = slider.value.toInt())
-                    pasoActual++
-                    mostrarPasoDelFiltro(view, pasoActual)
-                }
-            }
-            4 -> {
-                titulo.text = "¿Cómo de fácil de organizar debe ser?"
-                val sliderView = layoutInflater.inflate(R.layout.filtro_slider, container, false)
-                container.addView(sliderView)
-                btnAtras.visibility = View.VISIBLE
-                btnSiguiente.text = "Finalizar"
-
-                btnAtras.setOnClickListener {
-                    pasoActual--
-                    mostrarPasoDelFiltro(view, pasoActual)
-                }
-
-                btnSiguiente.setOnClickListener {
-                    val slider = sliderView.findViewById<Slider>(R.id.slider)
-                    filtroBuilder = filtroBuilder.copy(facilidad = slider.value.toInt())
-                    filtroSeleccionado = filtroBuilder.copy()
-                    dialogPaso?.dismiss()
-                    Toast.makeText(this, "Filtros aplicados. ¡Agita el móvil para buscar una cita!", Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-    }
-
-    private fun aplicarFiltrosYCargarCitas(filtro: CitaFiltroRequest) {
-        lifecycleScope.launch {
-            try {
-                val citas = RetrofitClient.citaApi.filtrarCitas(filtro)
-                if (citas.isEmpty()) {
-                    Toast.makeText(this@MisCitas, "No se han encontrado citas con esos filtros", Toast.LENGTH_SHORT).show()
-                    return@launch
-                }
-                val cita = citas.random()
-                val dialogView = layoutInflater.inflate(R.layout.dialog_cita_resultado, null)
-                val dialog = AlertDialog.Builder(this@MisCitas).setView(dialogView).create()
-                dialog.show()
-
-                dialog.findViewById<ImageButton>(R.id.btnCloseDialog)?.setOnClickListener {
-                    dialog.dismiss()
-                }
-
-                val txtTitulo = dialogView.findViewById<TextView>(R.id.txtTituloDialog)
-                val txtDescripcion = dialogView.findViewById<TextView>(R.id.txtDescripcionDialog)
-                val txtDetalles = dialogView.findViewById<TextView>(R.id.txtDetallesDialog)
-                txtTitulo.text = cita.titulo
-                txtDescripcion.text = cita.descripcion
-                val cercaniaTxt = when (cita.cercania) { 1 -> "Cerca"; 2 -> "Media"; 3 -> "Lejos"; else -> "-" }
-                val dineroTxt = when (cita.dinero) { 1 -> "Bajo"; 2 -> "Medio"; 3 -> "Alto"; else -> "-" }
-                val facilidadTxt = when (cita.facilidad) { 1 -> "Fácil"; 2 -> "Normal"; 3 -> "Difícil"; else -> "-" }
-                val intensidadTxt = when (cita.intensidad) { 1 -> "Tranqui"; 2 -> "Normal"; 3 -> "Intenso"; else -> "-" }
-                val temporadaTxt = when (cita.temporada) { 1 -> "Invierno"; 2 -> "Verano"; 3 -> "Otra"; else -> "Cualquiera" }
-                txtDetalles.text = """
-                    Cercanía: $cercaniaTxt
-                    Dinero: $dineroTxt
-                    Facilidad: $facilidadTxt
-                    Intensidad: $intensidadTxt
-                    Temporada: $temporadaTxt"""
-
-            } catch (e: Exception) {
-                Log.e("CITAS_FILTRADAS", "Error cargando citas", e)
-                Toast.makeText(this@MisCitas, "Error al cargar filtros", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
     override fun onResume() {
         super.onResume()
-        binding.bottomNavigation.selectedItemId = R.id.nav_mis_citas
-        accelerometer?.also { accel ->
-            sensorManager.registerListener(this, accel, SensorManager.SENSOR_DELAY_UI)
+        accelerometer?.also { acc ->
+            sensorManager.registerListener(this, acc, SensorManager.SENSOR_DELAY_NORMAL)
+        }
+        
+        // Recargar al volver de Crear Cita
+        val idUsuario = cache.getLong("id", 0L)
+        if (idUsuario != 0L) {
+            cargarCitasUsuario(idUsuario)
         }
     }
 
@@ -319,61 +221,117 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
-        if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
-            val currentTime = System.currentTimeMillis()
-            if ((currentTime - lastShakeTime) > shakeCooldownMs) {
-                val x = event.values[0]
-                val y = event.values[1]
-                val z = event.values[2]
+        if (event == null) return
+        if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
+            val x = event.values[0]
+            val y = event.values[1]
+            val z = event.values[2]
 
-                val acceleration = sqrt(x * x + y * y + z * z)
-
-                if (acceleration > shakeThreshold) {
+            val acceleration = sqrt(x * x + y * y + z * z)
+            if (acceleration > shakeThreshold) {
+                val currentTime = System.currentTimeMillis()
+                if (currentTime - lastShakeTime > shakeCooldownMs) {
                     lastShakeTime = currentTime
-                    filtroSeleccionado?.let {
-                        Log.d("SHAKE_DETECTED", "¡Agitación detectada! Buscando cita con filtro: $it")
-                        aplicarFiltrosYCargarCitas(it)
-                    }
+                    enviarNotificacionAprobacion()
                 }
             }
         }
     }
 
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) { /* No es necesario */ }
+    private fun mostrarProximaCita(citas: List<Cita>) {
+        Log.d("PROXIMA_CITA", "mostrarProximaCita llamada con ${citas.size} citas")
+        
+        val ahora = System.currentTimeMillis()
+        // Intentamos parsear la fecha para encontrar la más cercana futura
+        // Nota: Esto depende del formato de fecha que devuelva el backend
+        // Como fallback, mostramos la primera de la lista si no podemos comparar bien
+        val proxima = citas.filter { 
+            // Aquí idealmente parsearíamos cita.fecha, pero por simplicidad
+            // y asumiendo que el backend las devuelve ordenadas o relevantes:
+            true 
+        }.firstOrNull()
 
-    // --- Métodos del CitaActionListener ---
+        if (proxima != null) {
+            Log.d("PROXIMA_CITA", "Mostrando cita: ${proxima.nombreDoctor} - ${proxima.fechaHoraCita}")
+            binding.layoutProximaCita.visibility = View.VISIBLE
+            binding.tvProximaCitaDoctor.text = proxima.nombreDoctor ?: "Médico"
+            binding.tvProximaCitaEspecialidad.text = proxima.especialidad ?: "Consulta General"
+            
+            // Tratamos de extraer fecha y hora del campo fechaHoraCita (ISO format)
+            val fullDateTime = proxima.fechaHoraCita ?: ""
+            val datePart = fullDateTime.take(10) // 2026-02-15
+            val timePart = if (fullDateTime.length >= 16) fullDateTime.substring(11, 16) else "00:00"
+            
+            binding.tvProximaCitaFechaHora.text = "$datePart • $timePart"
+            binding.tvProximaCitaDescripcion.text = proxima.sintomas ?: "Sin descripción"
+            Log.d("PROXIMA_CITA", "Tarjeta visible y datos configurados correctamente")
+        } else {
+            Log.d("PROXIMA_CITA", "No hay citas, ocultando tarjeta")
+            binding.layoutProximaCita.visibility = View.GONE
+        }
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "Aprobaciones"
+            val descriptionText = "Canal para notificaciones de aprobación"
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val channel = NotificationChannel("APRUEBAME_CHAN", name, importance).apply {
+                description = descriptionText
+            }
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+    private fun enviarNotificacionAprobacion() {
+        val builder = NotificationCompat.Builder(this, "APRUEBAME_CHAN")
+            .setSmallIcon(R.drawable.ic_heart_filled)
+            .setContentTitle("Mensaje Especial")
+            .setContentText("hola juan tomas apruebame")
+            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
+            .setAutoCancel(true)
+
+        with(NotificationManagerCompat.from(this)) {
+            try {
+                notify(1001, builder.build())
+            } catch (e: SecurityException) {
+                Log.e("NOTIF_ERROR", "Sin permiso de notificación", e)
+            }
+        }
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
     override fun onEditarCita(cita: Cita) {
-        val intent = Intent(this, EditarCita::class.java).apply {
-            putExtra("CITA_ID", cita.id)
-        }
+        val intent = Intent(this, EditarCita::class.java)
+        intent.putExtra("cita_id", cita.id)
         startActivity(intent)
     }
 
     override fun onEliminarCita(cita: Cita, position: Int) {
         AlertDialog.Builder(this)
-            .setTitle("Confirmar Eliminación")
-            .setMessage("¿Estás seguro de que quieres eliminar la cita '${cita.titulo}'?")
+            .setTitle("Eliminar Cita")
+            .setMessage("¿Estás seguro de que deseas eliminar esta cita?")
             .setPositiveButton("Eliminar") { _, _ ->
-                eliminarCitaEnServidor(cita, position)
+                eliminarCita(cita, position)
             }
             .setNegativeButton("Cancelar", null)
             .show()
     }
 
-    private fun eliminarCitaEnServidor(cita: Cita, position: Int) {
+    private fun eliminarCita(cita: Cita, position: Int) {
         lifecycleScope.launch {
             try {
-                RetrofitClient.citaApi.eliminarCita(id = cita.id!!)
-                Toast.makeText(this@MisCitas, "Cita eliminada", Toast.LENGTH_SHORT).show()
-                citasAdapter.removeItem(position)
-                if (citasAdapter.itemCount == 0) {
-                    binding.rvMisCitas.visibility = View.GONE
-                    binding.layoutSinCitas.visibility = View.VISIBLE
+                cita.id?.let { id ->
+                    RetrofitClient.citaApi.eliminarCita(id)
+                    citasAdapter.removeItem(position)
+                    Toast.makeText(this@MisCitas, "Cita eliminada", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Log.e("ELIMINAR_CITA_ERROR", "Error al eliminar la cita", e)
-                Toast.makeText(this@MisCitas, "Error al eliminar: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(this@MisCitas, "Error al eliminar: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }

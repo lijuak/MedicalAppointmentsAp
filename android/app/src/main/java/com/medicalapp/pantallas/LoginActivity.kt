@@ -3,7 +3,6 @@ package com.medicalapp.pantallas
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.text.Html
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -12,9 +11,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.HtmlCompat
 import com.medicalapp.R
-import com.medicalapp.RetrofitClient
 import com.medicalapp.databinding.ActivityLoginBinding
-import com.medicalapp.model.Usuario
 import com.facebook.AccessToken
 import com.facebook.CallbackManager
 import com.facebook.FacebookCallback
@@ -30,6 +27,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import com.medicalapp.RetrofitClient
+import com.medicalapp.model.Usuario
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -215,17 +214,11 @@ class LoginActivity : AppCompatActivity() {
             if (task.isSuccessful) {
                 val idToken = task.result.token
                 if (idToken != null) {
-                    val tokenMap = mapOf("token" to idToken)
+                    val tokenMap = mapOf<String, String>("token" to idToken)
                     RetrofitClient.api.verificarToken(tokenMap).enqueue(object : Callback<Usuario> {
                         override fun onResponse(call: Call<Usuario>, response: Response<Usuario>) {
                             if (response.isSuccessful && response.body() != null) {
                                 val usuarioBackend = response.body()!!
-                                val nombreAMostrar = if (!firebaseUser.displayName.isNullOrEmpty()) {
-                                    firebaseUser.displayName
-                                } else {
-                                    usuarioBackend.username
-                                }
-                                Toast.makeText(this@LoginActivity, "¡Bienvenido, $nombreAMostrar!", Toast.LENGTH_SHORT).show()
                                 guardarDatosYNavegar(usuarioBackend, firebaseUser)
                             } else {
                                 Toast.makeText(this@LoginActivity, "Error del servidor: ${response.code()}", Toast.LENGTH_LONG).show()
@@ -237,14 +230,16 @@ class LoginActivity : AppCompatActivity() {
                             cerrarSesion()
                         }
                     })
-                } else { /* Token nulo */ }
-            } else { /* Error al obtener token */ }
+                }
+            } else {
+                Toast.makeText(this, "Error al obtener autenticación.", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
     private fun guardarDatosYNavegar(user: Usuario, firebaseUser: FirebaseUser) {
         val displayName = firebaseUser.displayName
-        val username = if (!displayName.isNullOrEmpty()) displayName else user.username ?: ""
+        val username = if (!displayName.isNullOrEmpty()) displayName else user.username ?: "Usuario"
         val email = user.email ?: ""
         val id = user.id ?: 0L
 
@@ -254,6 +249,7 @@ class LoginActivity : AppCompatActivity() {
             .putLong("id", id)
             .apply()
 
+        Toast.makeText(this@LoginActivity, "¡Bienvenido, $username!", Toast.LENGTH_SHORT).show()
         navegarAPantallaPrincipal()
     }
 

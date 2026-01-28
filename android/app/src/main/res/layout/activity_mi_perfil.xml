@@ -75,9 +75,13 @@
                 android:textColor="@android:color/darker_gray"/>
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardNombreUsuario"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
                 app:cardCornerRadius="8dp"
                 app:cardBackgroundColor="#FFFFFF"
                 app:strokeWidth="1dp"
@@ -91,10 +95,11 @@
                     android:gravity="center_vertical">
 
                     <TextView
+                        android:id="@+id/tvNombreUsuario"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Nombre de usuario: martinmunozbastida"
+                        android:text="Nombre de usuario: Usuario"
                         android:textColor="@android:color/black" />
 
                     <ImageView
@@ -127,10 +132,11 @@
                     android:layout_height="match_parent" />
 
                 <SearchView
+                    android:id="@+id/searchView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="16dp"
-                    android:queryHint="Buscar"
+                    android:queryHint="Buscar ubicación"
                     android:iconifiedByDefault="false"
                     android:background="@android:color/white"/>
 
